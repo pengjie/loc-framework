@@ -6,9 +6,6 @@ import com.google.common.base.Strings;
 import com.loc.framework.autoconfigure.ConditionalOnPrefixProperty;
 import com.loc.framework.autoconfigure.LocBaseAutoConfiguration;
 import com.loc.framework.autoconfigure.jdbc.LocDataSourceAutoConfiguration;
-import java.util.List;
-import java.util.Optional;
-import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.plugin.Interceptor;
@@ -37,6 +34,10 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import javax.sql.DataSource;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created on 2018/1/13.
@@ -92,18 +93,18 @@ public class LocMybatisAutoConfiguration extends LocBaseAutoConfiguration implem
     MybatisSqlSessionFactoryBean sqlSessionFactoryBean = new MybatisSqlSessionFactoryBean();
     sqlSessionFactoryBean.setDataSource(dataSource);
     sqlSessionFactoryBean.setVfs(LocSpringBootVFS.class);
-    Optional.ofNullable(mybatisProperties.getConfigLocation()).map(this.resourceLoader::getResource)
+    Optional.ofNullable(mybatisProperties.getMybatisConfig()).map(this.resourceLoader::getResource)
         .ifPresent(sqlSessionFactoryBean::setConfigLocation);
 
     org.apache.ibatis.session.Configuration configuration = mybatisProperties.getConfiguration();
-    if (configuration == null && !StringUtils.hasText(mybatisProperties.getConfigLocation())) {
+    if (configuration == null && !StringUtils.hasText(mybatisProperties.getMybatisConfig())) {
       configuration = new org.apache.ibatis.session.Configuration();
     }
 
     sqlSessionFactoryBean.setConfiguration(configuration);
     Optional.ofNullable(mybatisProperties.getConfigurationProperties())
         .ifPresent(sqlSessionFactoryBean::setConfigurationProperties);
-    Optional.ofNullable(mybatisProperties.getTypeAliasesPackage())
+    Optional.ofNullable(mybatisProperties.getAliasPackage())
         .ifPresent(sqlSessionFactoryBean::setTypeAliasesPackage);
     Optional.ofNullable(mybatisProperties.getTypeHandlersPackage())
         .ifPresent(sqlSessionFactoryBean::setTypeHandlersPackage);
@@ -123,9 +124,9 @@ public class LocMybatisAutoConfiguration extends LocBaseAutoConfiguration implem
       register(configurableListableBeanFactory, sqlSessionFactory, prefixName + "SessionFactory",
           prefixName + "Sf");
 
-      if (!Strings.isNullOrEmpty(mybatisProperties.getBasePackage())) {
+      if (!Strings.isNullOrEmpty(mybatisProperties.getMapperScanner())) {
         createBasePackageScanner((BeanDefinitionRegistry) configurableListableBeanFactory,
-            mybatisProperties.getBasePackage(), prefixName);
+            mybatisProperties.getMapperScanner(), prefixName);
       } else {
         createClassPathMapperScanner((BeanDefinitionRegistry) configurableListableBeanFactory,
             prefixName);

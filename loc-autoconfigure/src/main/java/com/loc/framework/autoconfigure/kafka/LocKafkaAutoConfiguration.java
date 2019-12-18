@@ -17,6 +17,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.adapter.RecordFilterStrategy;
+import org.springframework.kafka.support.LogIfLevelEnabled;
 import org.springframework.kafka.support.converter.RecordMessageConverter;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 
@@ -62,6 +63,7 @@ public class LocKafkaAutoConfiguration {
       ConsumerFactory<Object, Object> kafkaConsumerFactory) {
     ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
     ContainerProperties containerProperties = factory.getContainerProperties();
+    containerProperties.setCommitLogLevel(LogIfLevelEnabled.Level.INFO);
     factory.setRecordFilterStrategy(locMessageFilterStrategy());
     factory.setErrorHandler(new LocKafkaConsumerErrorHandler());
     factory.setMessageConverter(recordMessageConverter());

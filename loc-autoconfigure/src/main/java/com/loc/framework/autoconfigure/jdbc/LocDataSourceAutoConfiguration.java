@@ -1,13 +1,9 @@
 package com.loc.framework.autoconfigure.jdbc;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.base.Strings;
 import com.loc.framework.autoconfigure.ConditionalOnPrefixProperty;
 import com.loc.framework.autoconfigure.LocBaseAutoConfiguration;
 import com.zaxxer.hikari.HikariDataSource;
-import java.util.Optional;
-import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator;
 import net.sf.log4jdbc.sql.jdbcapi.DataSourceSpy;
@@ -23,6 +19,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.aspectj.AnnotationTransactionAspect;
+
+import javax.sql.DataSource;
+import java.util.Objects;
+import java.util.Optional;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Created on 2017/12/26.
@@ -71,7 +73,7 @@ public class LocDataSourceAutoConfiguration extends LocBaseAutoConfiguration imp
 
   private void createBean(ConfigurableListableBeanFactory configurableListableBeanFactory,
       String prefixName, JdbcProperties jdbcProperties) {
-    String jdbcUrl = jdbcProperties.getJdbcUrl();
+    String jdbcUrl = jdbcProperties.getUrl();
     checkArgument(!Strings.isNullOrEmpty(jdbcUrl), prefixName + " url is null or empty");
     log.info("prefixName is {}, jdbc properties is {}", prefixName, jdbcProperties);
 
@@ -94,11 +96,11 @@ public class LocDataSourceAutoConfiguration extends LocBaseAutoConfiguration imp
 
   private HikariDataSource createHikariDataSource(JdbcProperties jdbcProperties) {
     HikariDataSource hikariDataSource = new HikariDataSource();
-    hikariDataSource.setJdbcUrl(jdbcProperties.getJdbcUrl());
+    hikariDataSource.setJdbcUrl(jdbcProperties.getUrl());
     hikariDataSource.setUsername(jdbcProperties.getUsername());
     hikariDataSource.setPassword(jdbcProperties.getPassword());
 
-    JdbcPoolProperties jdbcPoolProperties = jdbcProperties.getJdbcPool();
+    JdbcPoolProperties jdbcPoolProperties = jdbcProperties.getPool();
     hikariDataSource.setAutoCommit(jdbcPoolProperties.isAutoCommit());
     hikariDataSource.setConnectionTimeout(jdbcPoolProperties.getConnectionTimeout());
     hikariDataSource.setIdleTimeout(jdbcPoolProperties.getIdleTimeout());
@@ -121,7 +123,7 @@ public class LocDataSourceAutoConfiguration extends LocBaseAutoConfiguration imp
   private void initLog4Jdbc() {
     for (final String property : PROPERTIES_TO_COPY) {
       if (this.environment.containsProperty(property)) {
-        System.setProperty(property, this.environment.getProperty(property));
+        System.setProperty(property, Objects.requireNonNull(this.environment.getProperty(property)));
       }
     }
     System.setProperty("log4jdbc.spylogdelegator.name", this.environment

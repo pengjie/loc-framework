@@ -1,33 +1,26 @@
 package com.loc.framework.autoconfigure.okhttp;
 
-import static com.loc.framework.autoconfigure.common.LocConstants.OKHTTP_ERROR_CODE;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.loc.framework.autoconfigure.LocServiceException;
 import com.loc.framework.autoconfigure.common.BaseResult;
-import com.loc.framework.autoconfigure.utils.ProblemUtil;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.FormBody;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+import okhttp3.*;
 import okhttp3.Request.Builder;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
-import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.loc.framework.autoconfigure.common.LocConstants.OKHTTP_ERROR_CODE;
 
 /**
  * Created on 2018/9/5.
@@ -116,14 +109,14 @@ public class LocOkHttpClient {
     try {
       Response response = this.okHttpClient.newCall(request).execute();
       if (response.isSuccessful()) {
+        assert response.body() != null;
         String result = response.body().string();
         checkResult(result);
         Type type = typeReference.getType();
         if (isPrimitiveType(type)) {
           return new BaseResult(result);
         }
-
-        return BaseResult.success(objectMapper.readValue(result, typeReference));
+        return new BaseResult(objectMapper.readValue(result,typeReference));
       } else {
         log.error("request url: {} http status code:{}", request.url(), response.code());
         String result = Optional.ofNullable(response.body())

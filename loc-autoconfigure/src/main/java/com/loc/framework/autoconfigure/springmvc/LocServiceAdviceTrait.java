@@ -1,16 +1,8 @@
 package com.loc.framework.autoconfigure.springmvc;
 
-import static com.loc.framework.autoconfigure.common.LocConstants.BIND_ERROR_CODE;
-import static com.loc.framework.autoconfigure.common.LocConstants.CONSTRAINT_VIOLATION_ERROR_CODE;
-import static com.loc.framework.autoconfigure.common.LocConstants.METHOD_ARGUMENT_NOT_VALID_ERROR_CODE;
-
 import com.loc.framework.autoconfigure.LocServiceException;
 import com.loc.framework.autoconfigure.common.BaseResultCode;
 import com.loc.framework.autoconfigure.utils.ProblemUtil;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import org.apiguardian.api.API;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -24,6 +16,13 @@ import org.zalando.problem.spring.web.advice.general.GeneralAdviceTrait;
 import org.zalando.problem.spring.web.advice.http.HttpAdviceTrait;
 import org.zalando.problem.spring.web.advice.io.IOAdviceTrait;
 import org.zalando.problem.spring.web.advice.routing.RoutingAdviceTrait;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.loc.framework.autoconfigure.common.LocConstants.*;
 
 @API(status = API.Status.STABLE)
 public interface LocServiceAdviceTrait extends GeneralAdviceTrait, HttpAdviceTrait, IOAdviceTrait,
@@ -78,6 +77,7 @@ public interface LocServiceAdviceTrait extends GeneralAdviceTrait, HttpAdviceTra
             .collect(Collectors.joining(",")), METHOD_ARGUMENT_NOT_VALID_ERROR_CODE), request);
   }
 
+  @Override
   @API(status = API.Status.INTERNAL)
   @ExceptionHandler(value = Throwable.class)
   default ResponseEntity<Problem> handleThrowable(final Throwable throwable, final NativeWebRequest request) {
